@@ -1,0 +1,280 @@
+//4.2.6初始化列表
+//作用 :
+//C++提供了初始化列表语法，用来初始化属性
+//语法 : 构造函数() : 属性1(值1), 属性2(值2) ... { }
+
+class Person {
+public:
+	//传统初始化操作
+	//Person(int a, int b, int c)
+	//{
+	//	m_A = a;
+	//	m_B = b;
+	//	m_C = c;
+	//}
+
+	//初始化列表初始化属性
+	Person(int a, int b, int c) :m_A(a), m_B(b), m_C(c) {}
+
+
+	
+	int m_A;
+	int m_B;
+	int m_C;
+
+};
+void test01() {
+
+}
+int main()
+{
+	//Person p(10, 20, 30);
+	Person p(30,20,10);
+	cout << "m_A= " << p.m_A << endl;
+	cout << "m_B= " << p.m_B << endl;
+	cout << "m_C= " << p.m_C << endl;
+	system("pause");
+	return 0;
+}
+
+
+
+
+4.2.8静态成员
+静态成员就是在成员变量和成员函数前加上关键字static，称为静态成员
+
+静态成员分为：
+1.静态成员变量
+所有对象共享同一份数据
+在编译阶段分配内存
+类内声明，类外初始化
+
+2.静态成员函数
+所有对象共享同一一个函数
+静态成员函数只能访问静态成员变量
+
+1.静态成员变量
+class Person
+{
+public:
+	    //所有对象共享同一份数据
+		//在编译阶段分配内存
+		//类内声明，类外初始化
+	static int m_A;
+	//静态成员变量有访问权限
+private:
+		static int m_B;
+};
+
+ int  Person::m_A=100;
+ int Person::m_B = 200;
+
+//void test01()
+//{
+//	Person p;
+//	cout << p.m_A << endl;
+//	Person p2;
+//	p2.m_A = 200;
+//	cout << p.m_A << endl;
+//}
+
+void test02()
+{
+	//静态成员变量不属于某个对象上，所有对象都共享同一份数据
+	//因此静态成员变量有2种访问方式
+
+	//1.通过对象进行访问
+	Person p;
+	cout << p.m_A << endl;
+
+	//2.通过类名进行访问
+	cout << Person::m_A << endl;
+	//cout << Person::m_B << endl;  类外访问不到静态成员变量
+}
+int main()
+{
+	test02();
+	system("pause");
+	return 0;
+}
+
+
+4.2.8静态成员函数
+class Person {
+public:
+	static void func() {
+		m_A = 100;//静态成员函数可以访问静态成员变量
+		//m_B = 200;//静态成员函数不可以访问非静态成员变量,无法区分是哪一个对象的m_A
+		cout << "static void func调用" << endl;
+	}
+	static int m_A;
+	int m_B;
+
+	//静态成员函数有访问权限
+private :
+	static void func2()
+	{
+		cout << "static void func2函数的调用" << endl;
+	}
+};
+int Person::m_A = 0;
+//
+void test01()
+{
+	//1.通过对象访问
+	Person p;
+	p.func();
+	//2.通过类名访问
+	Person::func();
+
+
+	//Person::func2()  类外访问不到私有成员函数
+}
+int main()
+{
+	test01();
+
+	system("pause");
+	return 0;
+}
+
+
+
+
+
+//4.3C++对象模型和这个指针
+//4.3.1成员变量和成员函数分开存储
+//在C++中，类内的成员变量和成员函数分开存储
+//只有非静态成员变最才属于类的对象上
+class Person {
+
+	int m_A; //非静态成员变量  属于类的对象上
+
+	static int m_B; //静态成员变量 不属于类对象上
+	void func() {};//非静态成员函数 不属于类对象上
+	static void func2() {};//静态成员函数
+
+	
+};
+int Person::m_B = 0;
+void test01()
+{
+	Person p;
+	//空对象占用内存空间为: 1
+	//c++编译器和2给每一个空对象分配一个字节空间，为了区分空对象占内存的位置
+	//每一个空对象也应该有一个独一无二的内存地址
+
+	cout << "p的存储空间是"<<sizeof(p) << endl;
+}
+
+void test02()
+{
+	Person p;
+	cout << "p的存储空间是=" << sizeof(p) << endl;
+}
+int main()
+{
+	//test01();
+	test02();
+	return 0;
+}
+
+
+
+
+
+//4.3.2this指针概念
+//通过4.3.1我们知道在C++中成员变量和成员函数是分开存储的
+//每一个非静态态成员函数只会诞生一份函数实例.也就是说多个同类型的对象会共用1块代码
+//那么问题是 : 这一块代码是如何区分那个对象调用自己的呢？
+
+//C++通过提供特殊的对象指针，这个指针，解决上述问题。this指针指向被调用的成员函数所属的对象
+//这个指针是隐含每一个非静态成员函数内的一种指针
+//这个指针不需要定义，直接使用即可
+
+//这个指针的用途：
+//当形参和成员变是同名时，可用这个指针来区分
+//在类的非静态成员函数中返回对象本身，可使用return * this
+
+//1.解决名称冲突
+class Person {
+public:
+	Person(int age)
+	{
+		// this指针指向被调用的成员函数所属的对象
+		this->age = age;
+	}
+	int age;
+	Person& PersonAddAge(Person& p)
+	{
+		this->age += p.age;
+		//this指向p2的指针，*this指向的就是p2这个对象本体
+		return *this;
+ }
+};
+void test01()
+{
+	Person p1(18);
+	cout << "p1的年龄为:" << p1.age << endl;
+}
+
+//2.返回对象本身用*this 
+void test02()
+{
+	Person p1(10);
+	Person p2(10);
+	//链式编程思想
+	p2.PersonAddAge(p1).PersonAddAge(p1).PersonAddAge(p1);
+	cout << "p2的年龄为" << p2.age << endl;
+}
+int main()
+{
+	test02();
+	return 0;
+}
+
+
+
+
+
+//4.3.4 Const修饰成员函数
+//常函数：
+//成员函数后加const后我们称为这个函数为常函数
+//常函数内不可以修改成员属性
+//成员属性声明时加关键字mutable后，在常函数中依然可以修改
+
+//常对象：
+//声明对象前加const称该对象为常对象
+//常对象只能调用常函数
+
+//常函数
+class Person {
+public:
+	//this 指针的本质是指针常量,指针的指向不可修改，指针的值可以修改
+	//Person *const this;
+	//在成员函数后面加const，修饰的是this的指向，让指针指向的值也不可以修改
+	void showPerson() const
+	{
+		this->m_B = 100;
+		//this->m_A = 100;
+		//this=NULL;//this指针不可以修改指针的指向
+	}
+	void func()
+	{
+		m_A = 100;
+	}
+	int m_A;
+	mutable int m_B;
+};
+
+void test02()
+{
+	const Person p;//在对象前加const，变为常对象
+	//p.m_A = 100;
+	p.m_B = 100;
+
+	//常对象只能调用常函数
+	p.showPerson();
+	//p.func();  常对象，不可以调用普通成员函数，因为普通成员函数可以修改属性
+}
+

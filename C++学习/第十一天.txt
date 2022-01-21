@@ -1,0 +1,337 @@
+4.6继承
+继承是面向对象三大特性之一
+
+我们发现，定义这些类时，下级别的成员除了拥有上一级的共性，还有自己的特性.
+这个时候我们就可以考虑利用继承的技术，减少重复代码
+
+
+
+4.6.1继承的基本语法
+例如我们看到很多网站中，都有公共的头部，公共的底部，甚至公共的左侧列表，只有中心内容不同
+接下来我们分别利用普通写法和继承的写法来实现网页中的内容，看-下继承存在的意义以及好处
+
+语法:class 子类: 继承方式  父类      例如：class Java :public BasePage {}
+子类 也称为 派生类
+父类 也称为 基类
+
+继承的好处:可以减少重复的代码
+class A: public B;
+A类称为子类或派生类
+B类称为父类或基类
+
+派生类中的成员，包含两大部分：
+--类是从基类继承过来的，-类是自己增加的成员。
+从基类继承过过来的表现其共性，而新增的成员体现了其个性.
+
+
+
+4.6.2继承方式
+继承的语法：class 子类:继承方式 父类
+继承方式一共有三种:
+公共继承
+保护继承
+私有继承
+
+
+
+4.6.3继承中的对象模型
+问题：从父类继承过来的成员，那些属于子类对象中？
+class Base {
+public:
+	int m_A;
+protected:
+	int m_B;
+private:
+	int m_C;
+};
+
+class Son :public Base
+{
+public:
+	int m_D;
+};
+void test01()
+{ //16
+	//父类中所有非静态成员属性都会被子类继承下去
+	//父类中私有成员属性 是被编译器给隐藏了，因此访问不到，但是确实被继承下去了
+	cout << "size of son=" << sizeof(Son) << endl;
+}
+
+
+
+
+4.6.4继承中构造和析构顺序
+子类继承父类后，当创建子类对象，也会调用父类的构造函数
+问题:父类和子类的构造和析构顺序是谁先谁后？
+class Base {
+public:
+	Base()
+	{
+		cout << "Base的构造函数" << endl;
+	}
+	~Base()
+	{
+		cout << "Base的析构函数" << endl;
+	}
+
+};
+class Son1 :public Base {
+public:
+	Son1() {
+		cout << "Son1的构造函数" << endl;
+	}
+	~Son1() {
+		cout << "Son1的析构函数" << endl;
+	}
+};
+
+void test01()
+{
+	//Base b1;
+	//继承中的析构和析构顺序如下
+	//先构造父类，再构造子类，析构的顺序与析构的顺序相反
+	Son1 s1;
+
+
+}
+总结:继承中先调用父类构造函数，再调用子类构造函数，析构顺序与构造相反
+
+
+
+
+4.6.5继承同名成员处理方式
+问题:当子类与父类出现同名的成员，如何通过子类对象，访问到子类或父类中同名的数据呢？
+访问子类同名成员直接访问即可
+访问父类同名成员需要加作用域
+class Base {
+public:
+
+	Base() {
+		m_A = 100;
+	}
+	void func()
+	{
+		cout << "Base func的调用" << endl;
+	}
+	void func(int a)
+	{
+		cout << "Base func(int a)的调用" << endl;
+		m_A = 400;
+	}
+	int m_A;
+};
+class Son :public Base {
+public:
+
+	Son()
+	{
+		m_A = 200;
+	}
+	void func()
+	{
+		cout << "Son func的调用" << endl;
+	}
+
+	int m_A;
+};
+//同名成员属性
+void test01()
+{
+	Son s1;
+	cout << "子类m_A=" << s1.m_A << endl;
+	//如果通过子类对象 访问到父类下的同名成员  需要加作用域
+	cout << "父类m_A=" << s1.Base::m_A << endl;
+}
+//同名成员函数
+void test02()
+{
+	Son s;
+	//s.func();
+	//s.Base::func();
+	// 
+	//如果子类中出现了父类同名的成员函数，子类同名成员会隐藏父类中所有同名函数
+	// 如果想访问到父类中隐藏的同名函数成员，需要加作用域
+	
+	s.Base::func(10);
+	
+int main()
+{
+	//test01();
+	test02();
+	return 0;
+}
+总结：
+1.子类对象可以直接访问到子类中同名成员
+2.子类对象加作用域可以访问到父类同名成员
+3.当子类与父类拥有同名的成员函数，子类会隐藏父类中同名成员函数，加作用域可以访问到父类中同名函数
+
+
+
+
+4.6.6继承同名静态成员处理方式
+问题:继承中同名的静态成员在子类对象上如何进行访问？
+静态成员和非静态成员出现同名，处理方式-致
+访问子类同名成员直接访问即可
+访问父类同名成员需要加作用域、
+
+class Base {
+public:
+	static int m_A;
+	static void func() {
+		cout << "Base -static void func()调用" << endl;
+	}
+	static void func(int a) {
+		cout << "Base -static void func(int a)调用" << endl;
+	}
+};
+int Base::m_A = 100;
+class Son :public Base {
+	public:
+		static int m_A;
+		static void func() {
+			cout << "Son -static void func()调用" << endl;
+		}
+};
+int Son::m_A = 200;
+
+
+1.同名静态成员属性
+void test01()
+{  //1.通过对象访问
+	Son s;
+	cout << "通过对象访问" << endl;
+	cout << "Son m_A=" <<s.m_A<< endl;
+	cout << "Base m_A=" <<s.Base::m_A<< endl;
+	//2.通过类名访问
+	cout << "通过类名访问" << endl;
+	cout << "Son m_A=" << Son::m_A << endl;
+	//第一个::代表通过类名方式访问 第二个::代表访问父类作用域下
+	cout << "Base m_A=" << Son::Base::m_A << endl;
+	
+//}
+
+
+//2.同名静态成员函数
+void test02()
+{//通过对象访问
+	Son s;
+	cout << "通过对象访问" << endl;
+	s.func();
+	s.Base::func();
+	//2.通过类名
+	cout << "通过类名" << endl;
+	Son::func();
+	Son::Base::func();
+	//如果子类中出现了父类同名的成员函数，子类同名成员会隐藏父类中所有同名函数
+	// 如果想访问到父类中隐藏的同名函数成员，需要加作用域
+	Son::Base::func(100);
+}
+
+int main()
+{
+	//test01();
+	test02();
+	return 0;
+}
+(总结:同名静态成员处理方式和非静态处理方式-样，只不过有两种访问的方式(通过对象和通过类名)
+
+
+4.6.7多继承语法
+C++允许-个类继承多个类
+语法：子类:继承方式 父类1，继承方式 父类2.
+多继承可能会引发父类中有同名成员出现，需要加作用域区分
+C++实际开发中不建议用多继承
+class Base1 {
+public:
+	Base1() {
+		m_A = 100;
+	}
+	int m_A;
+};
+
+class Base2 {
+public:
+	Base2() {
+		m_A = 200;
+	}
+	int m_A;
+};
+//子类 继承Base1和Base2
+class Son :public Base1, public Base2
+{
+public:
+	Son()
+	{
+		m_C = 300;
+		m_D = 400;
+	}
+	int m_C;
+	int m_D;
+};
+
+ void  test01()
+{
+	Son s;
+
+	cout << "sizeof Son=" << sizeof(Son) << endl;
+	//当父类中出现同名成员，需要加作用域区分
+	cout << "Base1 m_A=" << s.Base1:: m_A << endl;
+	cout << "Base2 m_A=" << s.Base2::m_A << endl;
+}
+int main()
+{
+	test01();
+	system("pause");
+	return 0;
+}
+总结:多继承中如果父类中出现了同名情况，子类使用时候要加作用域
+
+
+
+4.6.8菱形继承
+菱形继承概念：
+两个派生类继承同一一个基类
+又有某个类同时继承这两个派生类
+这种继承被称为菱形继承，或者钻石继承
+//动物类
+class Animal {
+public:
+	int m_Age;
+};
+//利用虚继承 解决菱形继承问题
+// 继承之前加上关键字virtual 变成虚继承
+// Animal类称为虚基类
+//羊类
+class Sheep:virtual public Animal{};
+
+//驼类
+class Tuo :virtual public Animal {};
+
+//羊驼类
+class SheepTuo : public Sheep, public Tuo {};
+void test01()
+{
+	SheepTuo st;
+	st.Sheep::m_Age = 18;
+	st.Tuo::m_Age = 28;
+	//当菱形继承，两个父类拥有相同数据，需要加以作用域区分
+	cout << "	st.Sheep::m_Age = " << st.Sheep::m_Age << endl;
+	cout << "	st.Tuo::m_Age = " << st.Tuo::m_Age << endl;
+	cout <<"st.m_Age="<< st.m_Age << endl;
+	//这份数据我们知道只有有一份就可以，菱形继承导致数据有两份，资源浪费
+
+
+
+}
+int main()
+{
+	test01();
+	return 0;
+}
+总结：
+菱形继承带来的主要问题是好类继承两份相同的数据，导致资源浪费以及毫无意义
+利用虚继承可以解决菱形继承问题
+
+
+
+

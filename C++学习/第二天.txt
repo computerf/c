@@ -1,0 +1,51 @@
+8.2结构体
+创建结构体的三种方式：
+ struct Student
+{ string name；
+ int age；
+int score；
+             }
+1.struct Student s1；
+2.struct  Student s2={......}；
+
+
+8.3结构体数组
+与数组一样
+
+
+8.4结构体指针
+作用：通过指针访问结构体中的成员
+符号->
+1.创建结构体变量~~~~~~~~~~~~~~~
+2.通过指针指向结构体变量
+student * p=&s;
+3.通过指针访问结构体变量中的数据
+p->name ; p->age; 
+
+
+8.5结构体嵌套结构体 
+struct student{
+string name;
+int age;
+int score;
+}
+struct teacher{
+int id;
+string name;
+int age;
+struct student stu;
+}
+
+
+
+8.6结构体做函数参数
+值传递
+地址传递
+
+8.7结构体中const的使用
+void printStudent(const student *s)
+{
+  //s->age=150
+加入const后，不可以修改传进来的数据，防止误操作
+}
+

@@ -1,0 +1,254 @@
+4.2对象的初始化和清理
+
+4.2.1构造函数和析构函数
+对象的初始化和清理是非常重要的安全问题
+一个对象或变量没有初始状态，对其使用后果是未知的
+使用完一个对象或变量，没有及时清理，会造成安全问题
+
+c++利用构造函数和析构函数解决上面问题，由编译器自动调用，完成对象的初始化和清理工作
+
+构造函数：主要作用在创建对象时为对象成员属性赋值，构造函数编译器自动调用
+析构函数：在于对象销毁前系统自动调用，执行一些清理工作
+
+构造函数语法:类名(){}
+1.构造函数，没有返回值也不写void
+2.函数名称与类名相同
+3.构造函数可以有参数，因此可以发生重载
+4.程序在调用对象时候会自动调用构造，无须手动调用，而且只会调用1次
+
+
+
+析构函数语法:~类名(）{}
+1.析构函数，没有返回值也不写void
+2.函数名称与类名相同,在名称前加上符号~
+3.析构函数不可以有参数，因此不可以发生重载
+4.程序在对象销毁前会自动调用析构,无须手动调用,而且只会调用1次
+
+
+4.2.2构造函数的分类及调用
+//1.构造函数的分类及调用
+//分类
+//两种分类方式:
+//按参数分为:有参构造和无参构造
+//按类型分为 : 普通构造和拷贝构造
+
+class Person {
+
+public:
+	//构造函数
+	Person() {
+		cout << "Person的无参构造函数调用" << endl;
+	}
+
+	Person(int a) {
+		age = a;
+		 cout << "Person的有参构造函数调用" << endl;
+	}
+
+	~Person() {
+		cout << "Person的析构函数调用" << endl;
+	}
+
+	//拷贝构造函数
+	Person(const Person &p)
+	{  //将传入的人身上的所有属性，拷贝到我身上
+		cout << "拷贝构造函数调用" << endl;
+		age = p.age;
+
+	}
+    
+
+	int  age;
+};
+
+//调用
+//三种调用方式:
+//括号法
+//显示法
+//隐式转换法.
+
+void test01() {
+	//1.括号法
+	//Person p1;//默认构造函数调用
+	//Person p2(10);//有参构造函数
+	//Person p3(p2);//拷贝构造函数
+	// 
+	//cout << "p2的年龄" << p2.age << endl;
+	//cout << "p3的年龄" << p3.age << endl;
+	// 
+	//注意事项1:调用默认构造函数时，不要加();
+	//因为编译器会认为这是一个函数声明,不会认为在创建对象
+	//Person p1();
+
+
+	//2.显示法
+	/*Person p1;
+	Person p2 = Person(10);
+	Person p3 = Person(p2);*/
+
+	//Person(10); //匿名对象   特点:当前行执行结束后，系统会立即回收匿名对象
+	//cout << "aaa" << endl;
+
+	//注意事项2
+	//不要利用拷贝构造函数，初始化匿名对象,编译器认为Person(p3) === Person p3;
+	//Person(p3);
+
+	//3.隐式转化法
+	Person p4 = 10;  // 相当于写了 Person p4=Person(10);有参构造
+	Person p5 = p4;   //拷贝构造
+}
+
+int main() {
+	test01();
+	 
+	return 0;
+}
+
+
+//4.2.3拷贝构造函数调用时机
+//C++中拷贝构造函数调用时机通常有三种情况
+//1.使用一个已经创建完毕的对象来初始化一个新对象
+//2.值传递的方式给函数参数传值
+//3.以值方式返回局部对象
+
+class Person {
+
+public:
+	Person() {
+		cout << "Person默认构造函数调用" << endl;
+	}
+
+	Person(int age) {
+		cout << "Person有参构造函数调用" << endl;
+		m_Age = age;
+	}
+	~Person() {
+
+		cout << "Person析构函数调用" << endl;
+	}
+	Person(const Person& p) {
+		cout << "Person拷贝构造函数调用" << endl;
+		m_Age = p.m_Age;
+	}
+
+
+	int m_Age;
+};
+//1.使用一个已经创建完毕的对象来初始化一个新对象
+void test01() {
+	Person p1(20);
+	Person p2(p1);
+	cout << "p1的年龄" << p1.m_Age << endl;
+	cout << "p2的年龄" << p2.m_Age << endl;
+	
+}
+
+//2.值传递的方式给函数参数传值
+
+
+void doWork(Person p) {
+
+
+}
+
+void test02() {
+	Person p;
+	doWork(p);
+}
+
+
+//3.以值方式返回局部对象
+Person doWork2() {
+	Person p1;
+	cout << (int*)&p1 << endl;
+	return p1;
+}
+
+void test03() {
+	Person p = doWork2();
+	cout << (int*)&p << endl;
+}
+
+int main() {
+	//test01();
+	//test02();
+	test03();
+	system("pause");
+	return 0;
+}
+
+
+4.2.4构造函数调用规则
+默认情况下，C++编译器至少给一个类添加3个函数
+1.默认构造函数(无参，函数体为空)
+2.默认析构函数(无参，函数体为空)
+3.默认拷贝构造函数,对属性进行值拷贝
+
+构造函数调用规则如下:
+●如果用户定义有参构造函数，C+ +不在提供默认无参构造，但是会提供默认拷贝构造
+●如果用户定义拷贝构造函数，C++不会再提供其他构造函数
+
+
+
+/*
+4.2.5深拷贝与浅拷贝
+深浅拷贝是面试经典问题，也是常见的一个坑
+
+浅拷贝 : 简单的赋值拷贝操作
+//浅拷贝带来的问题是堆区的内存重复释放
+//浅拷贝的问题用深拷贝来解决
+
+深拷贝 : 在堆区重新申请空间，进行拷贝操作*/
+
+class Person {
+public:
+	Person() {
+		cout << "Person的默认构造函数" << endl;
+	}
+	Person(int age,int high)
+	{
+		m_age = age;
+		m_high=new int(high);
+		cout << "Person的有参构造函数" << endl;
+
+	}
+	~Person() {
+		//析构代码，将堆区开辟数据做释放操作
+		if (m_high != NULL)
+		{
+			delete m_high;
+			m_high = NULL;
+		}
+		cout << "Person的析构函数" << endl;
+	}
+		Person(const Person & p)
+		{
+			cout << "Person的拷贝构造函数调用" << endl;
+			m_age = p.m_age;
+			//m_high = p.m_high;编译器默认实现的是这行
+			// 
+			//深拷贝
+			m_high = new int(*p.m_high);
+		}
+		int m_age;
+		int* m_high;
+};
+
+void test01() {
+	Person p1(18,160);
+	cout << "p1 age=" << p1.m_age <<"  p1 high ="<<*(p1.m_high) <<endl;
+	Person p2(p1);
+	cout << "p2 age=" << p2.m_age << "  p2 high =" << *(p2.m_high) << endl;
+
+}
+int main() {
+	test01();
+	system("pause");
+	return 0;
+}
+
+总结:如果属性有在堆区开辟的，一定要 自己提供拷贝构造函数I防止浅拷贝带来的问题
+
+
+
+

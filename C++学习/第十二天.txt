@@ -1,0 +1,248 @@
+4.7多态
+4.7.1多态的基本概念
+多态是C++面向对象三大特性之一
+
+多态分为两类
+静态多态:函数重载和运算符重载属于静态多态，复用函数名
+动态多态:派生类和虚函数实现运行时多态
+
+静态多态和动态多态区别：
+静态多态的函数地址早绑定-编译阶段确定函数地址
+动态多态的函数地址晚绑定-运行阶段确定函数地址
+下面通过案例进行讲解多态
+//动物类
+class Animal
+{
+public:
+	//虚函数
+	virtual void speak()
+	{
+		cout << "动物在说话" << endl;
+	}
+};
+//猫类
+class Cat :public Animal {
+public:
+	 void speak()
+	{
+		cout << "小猫在说话" << endl;
+	}
+};
+
+//执行说话的函数
+//地址早绑定,在编译阶段确定了函数地址
+//如果想执行让猫说话，那么这个函数地址就不能提前绑定，需要在运行阶段进行绑定，地址晚绑定
+// 
+//动态多态满足的条件：
+//1.有继承关系
+//2.子类重写父类的虚函数
+//重写： 函数返回值类型 函数名 参数列表 完全相同
+
+//动态多态的使用
+//父类的指针或引用 执行子类对象
+void doSpeak(Animal& animal) //Animal & animal =cat;
+{ 
+	animal.speak();
+}
+void test01()
+{
+	Cat cat;
+	doSpeak(cat);
+	
+}
+int main()
+{
+	test01();
+
+	return 0;
+}
+
+
+
+4.7.2多态案例一-计算器类
+案例描述：
+分别利用普通写法和多态技术，设计实现两价操作数进行运算的计算器类
+多态的优点:|
+代码组织结构清晰
+可读性强
+利于前期和后期的扩展以及维护
+class AbstractCalculator {
+public:
+	virtual int getResult() {
+		return 0;
+	}
+	int m_Num1;
+	int m_Num2;
+};
+//加法计算器类
+class AddCalculator :public AbstractCalculator {
+public:
+	int getResult()
+	{
+		return m_Num1 + m_Num2;
+	}
+};
+class SubCalculator :public AbstractCalculator {
+public:
+	int getResult()
+	{
+		return m_Num1 - m_Num2;
+	}
+};
+class MulCalculator :public AbstractCalculator {
+public:
+	int getResult()
+	{
+		return m_Num1 * m_Num2;
+	}
+};
+void test02()
+{
+	//多态使用条件
+	//父类指针或者引用指向子类对象
+	
+	//加法运算
+	AbstractCalculator* abc = new AddCalculator;
+	abc->m_Num1 = 10;
+	abc->m_Num2 = 10;
+	cout << abc->m_Num1 << "+" << abc->m_Num2 << "=" << abc->getResult() << endl;
+	delete abc;
+	//减法运算
+       abc = new SubCalculator;
+	   abc->m_Num1 = 10;
+	   abc->m_Num2 = 10;
+	cout << abc->m_Num1 << "-" << abc->m_Num2 << "=" << abc->getResult() << endl;
+	delete abc;
+	//乘法运算
+	abc = new MulCalculator;
+	abc->m_Num1 = 10;
+	abc->m_Num2 = 10;
+	cout << abc->m_Num1 << "*" << abc->m_Num2 << "=" << abc->getResult() << endl;
+	delete abc;
+}
+int main()
+{
+	//test01();
+	test02();
+	return 0;
+}
+
+
+
+4.7.3纯虚函数和抽象类
+在多态中，通常父类中虚函数的实现是毫无意义的，主要都是调用子类重写的内容
+因此可以将虚函数改为纯虚函数
+纯虚函数语法：virtual 返回值类型 函数名 (参数列表)=0；
+
+当类中有了纯虚函数，这个类也称为抽象类
+抽象类特点：
+无法实例化对象
+子类必须重写抽象类中的纯虚函数，否则也属于抽象类
+class Base
+{
+public:
+	//纯虚函数   //目的:让子类重写父类中的虚函数
+	//只要有一个纯虚函数，这个类称为抽象类
+	//特点：
+	//1.无法实例化对象
+	//2.抽象类的子类 必须要重写父类中的纯虚函数，否则也属于抽象类
+	virtual void func() = 0 ; 
+};
+class Son :public Base {
+public:
+	 void func() {
+		cout << "func函数调用" << endl;
+	};
+
+};
+void test01()
+{
+	//Base b; 抽象类无法实例化对象
+	//new Base;抽象类无法实例化对象
+	Son s;
+	Base* base = new Son;
+	base->func();
+}
+
+int main()
+{
+
+	test01();
+	return 0;
+}
+
+
+
+
+4.7.5虚析构和纯虚析构
+多态使用时，如果子类中有属性开辟到堆区，那么父类指针在释放时无法调用到子类的析构代码
+解决方式 : 将父类中的析构函数改为虚析构或者纯虚析构
+虚析构和纯虚析构共性：
+可以解决父类指针释放子类对象
+都需要有具体的函数实现
+虚析构和纯虚析构区别：
+如果是纯虚析构，该类属于抽象类，无法实例化对象
+
+虚析构语法: virtual ~类名() {}
+纯虚析构语法： virtual ~类名()=0；
+class Animal
+{
+public:
+	Animal()
+	{
+		cout << "Animal构造函数调用" << endl;
+	}
+	//纯虚函数
+	virtual void speak() = 0;
+	/*virtual ~Animal()
+	{
+		cout << "Animal析构函数调用" << endl;
+	}*/
+
+	//纯虚析构 需要声明也需要实现
+	//有了纯虚析构后，这个类属于抽象类，无法实例化对象
+	virtual ~Animal() = 0;
+
+};
+Animal:: ~Animal() {
+	cout << "Animal纯虚析构函数调用" << endl;
+
+}
+
+class Cat : public Animal {
+public:
+	Cat(string name)
+	{
+		cout << "cat的构造函数调用" << endl;
+		m_Name = new string(name);
+	}
+	//利用虚析构可以解决 父类指针释放子类对象时不干净的问题
+	virtual void speak()
+	{
+		cout <<*m_Name<< "小猫在说话" << endl;
+	}
+	~Cat()
+	{
+		if (m_Name != NULL)
+		{ 
+			cout << "Cat析构函数调用" << endl;
+			delete m_Name;
+			m_Name = NULL;
+		}
+	}
+	string *m_Name;
+
+};
+void test01()
+{
+	Animal* animal = new Cat("Tom");
+	animal->speak();
+	//父类指针在析构时候 不会调用子类中析构函数，导致子类如果有堆区属性，出现内存泄漏
+
+	delete animal;
+
+}
+
+
+
+
